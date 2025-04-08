@@ -11,7 +11,7 @@
 #define PRINT_COLOR_RESET "\x1b[0m" 
 
 int TOGGLE_CLICK_BUFFER = 1;
-float CLICK_BUFFER_RATE = 1;
+int CLICK_BUFFER_RATE = 1;
 int CLICK_PER_SECOND = 0;
 
 void getKeybind();
@@ -49,8 +49,8 @@ void printMenu()
         (TOGGLE_CLICK_BUFFER == 1) ? "ON" : "OFF",
         PRINT_COLOR_RESET
     );
-    printf(PRINT_GOLD"2. Change Click Buffer Rate Value: Currently %g\n", CLICK_BUFFER_RATE);
-    printf("3. About The Program \n");
+    printf(PRINT_GOLD"2. Change Click Buffer Rate Value(int): Currently "PRINT_GREEN"%d\n"PRINT_COLOR_RESET, CLICK_BUFFER_RATE);
+    printf(PRINT_GOLD"3. About The Program \n");
     printf("4. Exit The Program\n"PRINT_COLOR_RESET);
     printf(PRINT_AQUA"%s\n"PRINT_COLOR_RESET, line);
 }
@@ -86,10 +86,9 @@ void menuHandler()
             break;
         case 2: // KeyBind
             refreshMenu();
-            printf("This Feature Will Be Implemented Soon :3\n");
-            printf(PRINT_AQUA"Press Enter to continue..."PRINT_COLOR_RESET);
-            while (getchar() != '\n');
-            getchar();
+            printUserPrompt();
+            scanf("%d", &CLICK_BUFFER_RATE);
+            refreshMenu();
             printUserPrompt();
             break;
         case 3:  // About The Program
@@ -142,8 +141,11 @@ void* clickEvent(void* arg)
             }
             if(!is_holding_key)
             {
-                leftClick();
-                Sleep(10);
+                for(int i = 1; i<= CLICK_BUFFER_RATE; i++)
+                {
+                    leftClick();
+                    Sleep(10);
+                }
             }
         }
     }

@@ -205,7 +205,6 @@ void* clickEvent(void* arg)
             {
                 for(int i = 0; i< CLICK_BUFFER_RATE; i++)
                 {
-                    if (!(GetAsyncKeyState(VK_LBUTTON) & 0x8000)) break;
                     int sleep_for = 1000/CLICK_BUFFER_RATE;
                     leftClick();
                     Sleep(sleep_for);

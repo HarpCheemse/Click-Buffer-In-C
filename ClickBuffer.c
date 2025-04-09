@@ -15,7 +15,6 @@
 
 int TOGGLE_CLICK_BUFFER = 1;
 int CLICK_BUFFER_RATE = 1;
-int CLICK_PER_SECOND = 0;
 int sleep_for = 1;
 
 void getKeybind();
@@ -62,16 +61,10 @@ void change_CLICK_BUFFER_RATE()
     while(1)
     {
         int temp = intInput();
-        if(temp == ERROR)
+        if(temp <= 0 || temp > 61)
         {
             refreshMenu();
-            printf(PRINT_RED"Invalid Input!\n"PRINT_COLOR_RESET);
-            printf(PRINT_LIGHT_AQUA"Change Click Buffer Rate: "PRINT_COLOR_RESET);
-        }
-        else if(temp <= 0 || temp > 10)
-        {
-            refreshMenu();
-            printf(PRINT_RED"Please Enter Integer Number Between 1 And 10"PRINT_COLOR_RESET);
+            printf(PRINT_RED"Please Enter Integer Number Between 1 And 60"PRINT_COLOR_RESET);
             printf(PRINT_LIGHT_AQUA"\nChange Click Buffer Rate: "PRINT_COLOR_RESET);
         }
         else
@@ -102,7 +95,7 @@ void printMenu()
         (TOGGLE_CLICK_BUFFER == 1) ? "ON" : "OFF",
         PRINT_COLOR_RESET
     );
-    printf(PRINT_GOLD"2. Change Click Buffer Rate Value(int): Currently "PRINT_GREEN"%d\n"PRINT_COLOR_RESET, CLICK_BUFFER_RATE);
+    printf(PRINT_GOLD"2. Change Click Buffer Rate: Currently "PRINT_GREEN"+%d CPS\n"PRINT_COLOR_RESET, CLICK_BUFFER_RATE);
     printf(PRINT_GOLD"3. About The Program \n");
     printf("4. Exit The Program\n"PRINT_COLOR_RESET);
     printf(PRINT_AQUA"%s\n"PRINT_COLOR_RESET, line);
@@ -170,64 +163,52 @@ void* clickEvent(void* arg)
 {
     const DWORD HOLD_THRESHOLD = 100;
     const DWORD WAIT_THRESHOLD = 200;
-    DWORD first_last_click_time;
-    DWORD second_last_click_time;
+    DWORD start_timer;
+    DWORD current_timer;
     while(1)
     {
-        int is_holding_key = 0;
+        int is_valid_click = 1;
         int out_of_clicking_window_time = 0;
         if ((GetAsyncKeyState(VK_LBUTTON) & 0x8000) && TOGGLE_CLICK_BUFFER)
         {
-            first_last_click_time = GetTickCount();
+            start_timer = GetTickCount();
             while(GetAsyncKeyState(VK_LBUTTON) & 0x8000)
             {
-                DWORD first_current_click_time = GetTickCount();
-                if( first_current_click_time - first_last_click_time>HOLD_THRESHOLD)
+                current_timer = GetTickCount();
+                if( current_timer - start_timer>HOLD_THRESHOLD)
                 {
-                    is_holding_key = 1;  // no break to consume leftover
+                    is_valid_click = 0;  // no break to consume leftover hold LBUTTON
+                }
+                Sleep(1);
+            }   
+        }
+        while(is_valid_click)
+        {
+            start_timer = GetTickCount();
+            while(1)
+            {
+                current_timer = GetTickCount();
+                if ((GetAsyncKeyState(VK_LBUTTON) & 0x8000) && TOGGLE_CLICK_BUFFER) break;
+                if(current_timer - start_timer > WAIT_THRESHOLD) is_valid_click = 0;
+            }
+            start_timer = GetTickCount();
+            while(GetAsyncKeyState(VK_LBUTTON) & 0x8000 && is_valid_click)
+            {
+                current_timer = GetTickCount();
+                if( current_timer - start_timer>HOLD_THRESHOLD)
+                {
+                    is_valid_click = 0;  // no break to consume leftover
                 }
                 Sleep(1);
             }
-            if(!is_holding_key) //detect the first click
+            if(is_valid_click)
             {
-                START_LOOP:
-                DWORD start_timer = GetTickCount();
-                while(1)
+                for(int i = 0; i< CLICK_BUFFER_RATE; i++)
                 {
-                    DWORD current_timer = GetTickCount();
-                    if(current_timer - start_timer >= WAIT_THRESHOLD)  //detect if the second click inside the WAIT_threshold to start click buffer
-                    {
-                        out_of_clicking_window_time = 1;
-                        break;
-                    }
-                    if((GetAsyncKeyState(VK_LBUTTON) & 0x8000) && TOGGLE_CLICK_BUFFER)
-                    {
-                        second_last_click_time = GetTickCount();
-                        while((GetAsyncKeyState(VK_LBUTTON) & 0x8000) && TOGGLE_CLICK_BUFFER)  //check if the second click is a click or a hold
-                        {
-                            DWORD second_current_click_time = GetTickCount();
-                            if(second_current_click_time - second_last_click_time > HOLD_THRESHOLD)
-                            {
-                                is_holding_key = 1; // no break to consume leftover
-                            }
-                            Sleep(1);
-                        }
-                        break;
-                    } 
-                    
-                }
-                if(!is_holding_key && !out_of_clicking_window_time)
-                {
-                    for(int i = 0; i< CLICK_BUFFER_RATE;i++)
-                    {
-                        int first_random_sleep = (rand() % (20)) + 2;
-                        int second_random_sleep = (rand() % (20)) + 2;
-                        Sleep((second_last_click_time-first_last_click_time)/first_random_sleep);
-                        leftClick();
-                        Sleep((second_last_click_time-first_last_click_time)/second_random_sleep);
-                        leftClick();
-                        goto START_LOOP;
-                    }
+                    if (!(GetAsyncKeyState(VK_LBUTTON) & 0x8000)) break;
+                    int sleep_for = 1000/CLICK_BUFFER_RATE;
+                    leftClick();
+                    Sleep(sleep_for);
                 }
             }
         }

@@ -3,6 +3,8 @@
 #include <conio.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include <time.h>
+
 
 #define PRINT_RED "\x1b[31m" 
 #define PRINT_GREEN "\x1b[32m"
@@ -10,12 +12,12 @@
 #define PRINT_GOLD "\033[1;33m"
 #define PRINT_LIGHT_AQUA "\033[1;33m""\x1b[36m"
 #define PRINT_COLOR_RESET "\x1b[0m" 
-#define ERROR -1
+#define INPUT_ERROR -1
 #define MAX_SIZE 255
 
 int TOGGLE_CLICK_BUFFER = 1;
 int CLICK_BUFFER_RATE = 1;
-int sleep_for = 1;
+int sleep_for;
 
 void getKeybind();
 void printMenu();
@@ -50,7 +52,7 @@ int intInput()
         fgets(buffer, MAX_SIZE, stdin);
         buffer[strcspn(buffer,"\n")] = '\0';
         if(intInputHandler(buffer)) return atoi(buffer);
-        else return ERROR; 
+        else return INPUT_ERROR; 
     }
 }
 /*                     Input Function                */
@@ -61,10 +63,10 @@ void change_CLICK_BUFFER_RATE()
     while(1)
     {
         int temp = intInput();
-        if(temp <= 0 || temp > 61)
+        if(temp <= 0 || temp > 5)
         {
             refreshMenu();
-            printf(PRINT_RED"Please Enter Integer Number Between 1 And 60"PRINT_COLOR_RESET);
+            printf(PRINT_RED"Please Enter Integer Number Between 1 And 5"PRINT_COLOR_RESET);
             printf(PRINT_LIGHT_AQUA"\nChange Click Buffer Rate: "PRINT_COLOR_RESET);
         }
         else
@@ -89,15 +91,37 @@ void printMenu()
 {
     char line[255] = "============================================================";
     printf(PRINT_AQUA"%s\n"PRINT_COLOR_RESET, line);
-    printf(PRINT_GOLD"          Click Buffer        \n");
+    printf(PRINT_LIGHT_AQUA"                      Click Buffer        \n" PRINT_COLOR_RESET PRINT_GOLD);
     printf("1. Toggle Click Buffer. Currently %s%s%s\n",
         (TOGGLE_CLICK_BUFFER == 1) ? PRINT_GREEN : PRINT_RED,
         (TOGGLE_CLICK_BUFFER == 1) ? "ON" : "OFF",
         PRINT_COLOR_RESET
     );
-    printf(PRINT_GOLD"2. Change Click Buffer Rate: Currently "PRINT_GREEN"+%d CPS\n"PRINT_COLOR_RESET, CLICK_BUFFER_RATE);
+    printf(PRINT_GOLD"2. Change Click Buffer Rate: Currently: "PRINT_GREEN"Level %d \n"PRINT_COLOR_RESET, CLICK_BUFFER_RATE);
     printf(PRINT_GOLD"3. About The Program \n");
     printf("4. Exit The Program\n"PRINT_COLOR_RESET);
+    if(TOGGLE_CLICK_BUFFER)
+    {
+        switch(CLICK_BUFFER_RATE)
+        {
+            case 1: 
+                printf(PRINT_GOLD"Your Average "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"14 CPS\n"PRINT_COLOR_RESET);
+                break;
+            case 2:
+                printf(PRINT_GOLD"Your Average "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"18 CPS\n"PRINT_COLOR_RESET);
+                break;
+            case 3:
+                printf(PRINT_GOLD"Your Average "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"24 CPS\n"PRINT_COLOR_RESET);
+                break; 
+            case 4:
+                printf(PRINT_GOLD"Your Average "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"30 CPS\n"PRINT_COLOR_RESET);
+                break; 
+            case 5:
+                printf(PRINT_GOLD"Your Average "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"40 CPS\n"PRINT_COLOR_RESET);
+                break; 
+        }
+    }
+    else printf(PRINT_RED"Click Buffer Is Currently Off\n"PRINT_COLOR_RESET);
     printf(PRINT_AQUA"%s\n"PRINT_COLOR_RESET, line);
 }
 void refreshMenu()
@@ -154,6 +178,14 @@ void menuHandler()
     }
 }
 /*                    Functionality                  */
+int randomNumberGenerator()
+{
+    int min = 75;
+    int max = 125;
+    srand(time(NULL));
+    int random_number = min + rand() % (max - min + 1);
+    return random_number/100;
+}
 void leftClick()
 {
     mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
@@ -203,11 +235,49 @@ void* clickEvent(void* arg)
             }
             if(is_valid_click)
             {
-                for(int i = 0; i< CLICK_BUFFER_RATE; i++)
+                switch (CLICK_BUFFER_RATE)
                 {
-                    int sleep_for = 1000/CLICK_BUFFER_RATE;
+                case 1:
+                    sleep_for = 200 * randomNumberGenerator();
                     leftClick();
                     Sleep(sleep_for);
+                    break;
+                case 2:
+                    sleep_for = 100 * randomNumberGenerator();
+                    leftClick();
+                    Sleep(sleep_for);
+                    leftClick();
+                    break;
+                case 3:
+                    sleep_for = 50 * randomNumberGenerator();
+                    leftClick();
+                    Sleep(sleep_for);
+                    leftClick();
+                    Sleep(sleep_for);
+                    leftClick();
+                    break;
+                case 4: 
+                    sleep_for = 25 * randomNumberGenerator();
+                    leftClick();
+                    Sleep(sleep_for);
+                    leftClick();
+                    Sleep(sleep_for);
+                    leftClick();
+                    Sleep(sleep_for);
+                    leftClick();
+                    break;
+                case 5: 
+                    sleep_for = 10 * randomNumberGenerator();
+                    leftClick();
+                    Sleep(sleep_for);
+                    leftClick();
+                    Sleep(sleep_for);
+                    leftClick();
+                    Sleep(sleep_for);
+                    leftClick();
+                    Sleep(sleep_for);
+                    leftClick();
+                    break;
                 }
             }
         }

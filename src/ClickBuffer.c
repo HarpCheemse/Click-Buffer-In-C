@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <time.h>
-
+#include <math.h>
 
 #define PRINT_RED "\x1b[31m" 
 #define PRINT_GREEN "\x1b[32m"
@@ -15,9 +15,15 @@
 #define INPUT_ERROR -1
 #define MAX_SIZE 255
 
-int TOGGLE_CLICK_BUFFER = 1;
-int CLICK_BUFFER_RATE = 1;
-int sleep_for;
+#define DETECT_LEFT_CLICK  (GetAsyncKeyState(VK_LBUTTON) & 0x8000) 
+#define DETECT_RIGHT_CLICK (GetAsyncKeyState(VK_RBUTTON) & 0x8000) 
+
+char VERSION[20] = "1.1";
+int TOGGLE_LEFT_CLICK_BUFFER = 1;
+int TOGGLE_RIGHT_CLICK_BUFFER = 1;
+
+int LEFT_CLICK_BUFFER_RATE = 1;
+int RIGHT_CLICK_BUFFER_RATE = 1;
 
 void getKeybind();
 void printMenu();
@@ -44,7 +50,7 @@ bool intInputHandler(const char* input)
     }
     return true;
 }
-int intInput() 
+int intInput()  //my original input validation just reuse it :>
 {
 	char buffer[MAX_SIZE];
     while(1)
@@ -56,10 +62,10 @@ int intInput()
     }
 }
 /*                     Input Function                */
-void change_CLICK_BUFFER_RATE()
+void change_LEFT_CLICK_BUFFER_RATE()
 {
     clearBuffer();
-    printf(PRINT_LIGHT_AQUA"\nChange Click Buffer Rate: "PRINT_COLOR_RESET);
+    printf(PRINT_LIGHT_AQUA"\nChange "PRINT_COLOR_RESET PRINT_GREEN"LEFT"PRINT_COLOR_RESET PRINT_LIGHT_AQUA" Click Buffer Rate: "PRINT_COLOR_RESET);
     while(1)
     {
         int temp = intInput();
@@ -67,11 +73,31 @@ void change_CLICK_BUFFER_RATE()
         {
             refreshMenu();
             printf(PRINT_RED"Please Enter Integer Number Between 1 And 5"PRINT_COLOR_RESET);
-            printf(PRINT_LIGHT_AQUA"\nChange Click Buffer Rate: "PRINT_COLOR_RESET);
+            printf(PRINT_LIGHT_AQUA"\nChange "PRINT_COLOR_RESET PRINT_GREEN"LEFT"PRINT_COLOR_RESET PRINT_LIGHT_AQUA" Click Buffer Rate: "PRINT_COLOR_RESET);
         }
         else
         {
-            CLICK_BUFFER_RATE = temp;
+            LEFT_CLICK_BUFFER_RATE = temp;
+            return;
+        }
+    }
+}
+void change_RIGHT_CLICK_BUFFER_RATE()
+{
+    clearBuffer();
+    printf(PRINT_LIGHT_AQUA"\nChange "PRINT_COLOR_RESET PRINT_GREEN"RIGHT"PRINT_COLOR_RESET PRINT_LIGHT_AQUA" Click Buffer Rate: "PRINT_COLOR_RESET);
+    while(1)
+    {
+        int temp = intInput();
+        if(temp <= 0 || temp > 5)
+        {
+            refreshMenu();
+            printf(PRINT_RED"Please Enter Integer Number Between 1 And 5"PRINT_COLOR_RESET);
+            printf(PRINT_LIGHT_AQUA"\nChange "PRINT_COLOR_RESET PRINT_GREEN"LEFT"PRINT_COLOR_RESET PRINT_LIGHT_AQUA" Click Buffer Rate: "PRINT_COLOR_RESET);
+        }
+        else
+        {
+            RIGHT_CLICK_BUFFER_RATE = temp;
             return;
         }
     }
@@ -82,46 +108,75 @@ void printAboutProgram()
     refreshMenu();
     printf(PRINT_AQUA"\n\n================================= " PRINT_COLOR_RESET PRINT_LIGHT_AQUA "CREDITS " PRINT_COLOR_RESET PRINT_AQUA"=================================\n" PRINT_COLOR_RESET);
     printf(PRINT_GOLD"\nDeveloped by: HarpCheemse");
-    printf("\nVersion: 1.0");
+    printf("\nVersion: %s",VERSION);
     printf("\n- [Any libraries or resources used]");
     printf("\nContact: [harpcheemse@gmail.com]" PRINT_COLOR_RESET);
     printf(PRINT_AQUA"\n===========================================================================\n"PRINT_COLOR_RESET);
 }
+
 void printMenu()
 {
     char line[255] = "============================================================";
     printf(PRINT_AQUA"%s\n"PRINT_COLOR_RESET, line);
     printf(PRINT_LIGHT_AQUA"                      Click Buffer        \n" PRINT_COLOR_RESET PRINT_GOLD);
-    printf("1. Toggle Click Buffer. Currently %s%s%s\n",
-        (TOGGLE_CLICK_BUFFER == 1) ? PRINT_GREEN : PRINT_RED,
-        (TOGGLE_CLICK_BUFFER == 1) ? "ON" : "OFF",
+    printf("1. Toggle "PRINT_COLOR_RESET PRINT_GREEN" LEFT" PRINT_COLOR_RESET PRINT_GOLD" Click Buffer. Currently %s%s%s\n",
+        (TOGGLE_LEFT_CLICK_BUFFER == 1) ? PRINT_GREEN : PRINT_RED,
+        (TOGGLE_LEFT_CLICK_BUFFER == 1) ? "ON" : "OFF",
         PRINT_COLOR_RESET
     );
-    printf(PRINT_GOLD"2. Change Click Buffer Rate: Currently: "PRINT_GREEN"Level %d \n"PRINT_COLOR_RESET, CLICK_BUFFER_RATE);
-    printf(PRINT_GOLD"3. About The Program \n");
-    printf("4. Exit The Program\n"PRINT_COLOR_RESET);
-    if(TOGGLE_CLICK_BUFFER)
+    printf(PRINT_GOLD"2. Toggle "PRINT_COLOR_RESET PRINT_GREEN"RIGHT" PRINT_COLOR_RESET PRINT_GOLD" Click Buffer. Currently %s%s%s\n\n",
+        (TOGGLE_RIGHT_CLICK_BUFFER == 1) ? PRINT_GREEN : PRINT_RED,
+        (TOGGLE_RIGHT_CLICK_BUFFER == 1) ? "ON" : "OFF",
+        PRINT_COLOR_RESET
+    );
+    printf(PRINT_GOLD"3. Change "PRINT_COLOR_RESET PRINT_GREEN"LEFT " PRINT_COLOR_RESET PRINT_GOLD" Click Buffer Rate: Currently: "PRINT_GREEN"Level %d \n"PRINT_COLOR_RESET, LEFT_CLICK_BUFFER_RATE);
+    printf(PRINT_GOLD"4. Change "PRINT_COLOR_RESET PRINT_GREEN"RIGHT" PRINT_COLOR_RESET PRINT_GOLD" Click Buffer Rate: Currently: "PRINT_GREEN"Level %d \n\n"PRINT_COLOR_RESET,RIGHT_CLICK_BUFFER_RATE);
+    printf(PRINT_GOLD"5. About The Program \n");
+    printf("6. Exit The Program\n\n"PRINT_COLOR_RESET);
+    if(TOGGLE_LEFT_CLICK_BUFFER)
     {
-        switch(CLICK_BUFFER_RATE)
+        switch(LEFT_CLICK_BUFFER_RATE)
         {
             case 1: 
-                printf(PRINT_GOLD"Your Average "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"14 CPS\n"PRINT_COLOR_RESET);
+                printf(PRINT_GOLD"Your LEFT  click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"14 CPS\n"PRINT_COLOR_RESET);
                 break;
             case 2:
-                printf(PRINT_GOLD"Your Average "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"18 CPS\n"PRINT_COLOR_RESET);
+                printf(PRINT_GOLD"Your LEFT  click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"18 CPS\n"PRINT_COLOR_RESET);
                 break;
             case 3:
-                printf(PRINT_GOLD"Your Average "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"24 CPS\n"PRINT_COLOR_RESET);
+                printf(PRINT_GOLD"Your LEFT  click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"24 CPS\n"PRINT_COLOR_RESET);
                 break; 
             case 4:
-                printf(PRINT_GOLD"Your Average "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"30 CPS\n"PRINT_COLOR_RESET);
+                printf(PRINT_GOLD"Your LEFT  click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"30 CPS\n"PRINT_COLOR_RESET);
                 break; 
             case 5:
-                printf(PRINT_GOLD"Your Average "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"40 CPS\n"PRINT_COLOR_RESET);
+                printf(PRINT_GOLD"Your LEFT  click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"40 CPS\n"PRINT_COLOR_RESET);
                 break; 
         }
     }
-    else printf(PRINT_RED"Click Buffer Is Currently Off\n"PRINT_COLOR_RESET);
+    else printf(PRINT_RED"LEFT Click Buffer Is Currently Off\n"PRINT_COLOR_RESET);
+    if(TOGGLE_RIGHT_CLICK_BUFFER)
+    {
+        switch(RIGHT_CLICK_BUFFER_RATE)
+        {
+            case 1: 
+                printf(PRINT_GOLD"Your RIGHT click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"14 CPS\n"PRINT_COLOR_RESET);
+                break;
+            case 2:
+                printf(PRINT_GOLD"Your RIGHT click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"18 CPS\n"PRINT_COLOR_RESET);
+                break;
+            case 3:
+                printf(PRINT_GOLD"Your RIGHT click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"24 CPS\n"PRINT_COLOR_RESET);
+                break; 
+            case 4:
+                printf(PRINT_GOLD"Your RIGHT click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"30 CPS\n"PRINT_COLOR_RESET);
+                break; 
+            case 5:
+                printf(PRINT_GOLD"Your RIGHT click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"40 CPS\n"PRINT_COLOR_RESET);
+                break; 
+        }
+    }
+    else printf(PRINT_RED"RIGHT Click Buffer Is Currently Off\n"PRINT_COLOR_RESET);
     printf(PRINT_AQUA"%s\n"PRINT_COLOR_RESET, line);
 }
 void refreshMenu()
@@ -143,20 +198,33 @@ void menuHandler()
         scanf("%d", &user_selection);
         switch (user_selection)
         {
-        case 1:  // Toggle Click Buffer ON/OFF
+        case 1:  // Toggle LEFT Click Buffer ON/OFF
             refreshMenu();
             printUserPrompt();
-            TOGGLE_CLICK_BUFFER = !TOGGLE_CLICK_BUFFER;
-            refreshMenu();
-            printUserPrompt();
-            break;
-        case 2: // Change Click Buffer Rate
-            refreshMenu();
-            change_CLICK_BUFFER_RATE();
+            TOGGLE_LEFT_CLICK_BUFFER = !TOGGLE_LEFT_CLICK_BUFFER;
             refreshMenu();
             printUserPrompt();
             break;
-        case 3:  // About The Program
+        case 2:  // Toggle RIGHT Click Buffer ON/OFF
+            refreshMenu();
+            printUserPrompt();
+            TOGGLE_RIGHT_CLICK_BUFFER = !TOGGLE_RIGHT_CLICK_BUFFER;
+            refreshMenu();
+            printUserPrompt();
+            break;
+        case 3: // Change LEFT Click Buffer Rate
+            refreshMenu();
+            change_LEFT_CLICK_BUFFER_RATE();
+            refreshMenu();
+            printUserPrompt();
+            break;
+        case 4: // Change LEFT Click Buffer Rate
+            refreshMenu();
+            change_RIGHT_CLICK_BUFFER_RATE();
+            refreshMenu();
+            printUserPrompt();
+            break;
+        case 5:  // About The Program
             printAboutProgram();
             printf(PRINT_AQUA"Press Enter to continue..."PRINT_COLOR_RESET);
             while (getchar() != '\n');
@@ -164,7 +232,7 @@ void menuHandler()
             refreshMenu();
             printUserPrompt();
             break;
-        case 4:
+        case 6:
             refreshMenu();
             printf(PRINT_GREEN"Exit Program Succesfully"PRINT_COLOR_RESET);
             exit(0);
@@ -178,117 +246,144 @@ void menuHandler()
     }
 }
 /*                    Functionality                  */
-int randomNumberGenerator()
+float randomNumberGenerator() // generate number between 0.9 - 1.1
 {
-    int min = 75;
-    int max = 125;
-    srand(time(NULL));
+    int min = 90;
+    int max = 110;
     int random_number = min + rand() % (max - min + 1);
     return random_number/100;
+}
+int isHoldingLeftClick()
+{
+    const DWORD HOLD_THRESHOLD = 100;
+    DWORD start_timer;
+    DWORD current_timer;
+    start_timer = GetTickCount();
+    while(DETECT_LEFT_CLICK)     //detect left click and start the timer. if timer > threshold => holding key
+    {
+        current_timer = GetTickCount();
+        if( current_timer - start_timer> HOLD_THRESHOLD)
+        {
+            return 1;  // no break to consume leftover hold LBUTTON
+        }
+        Sleep(1);
+    }
+    return 0;
+}
+int isHoldingRightClick()
+{
+    const DWORD HOLD_THRESHOLD = 100;
+    DWORD start_timer;
+    DWORD current_timer;
+    start_timer = GetTickCount();
+    while(DETECT_RIGHT_CLICK)   //detect right click and start the timer. if timer > threshold => holding key
+    {
+        current_timer = GetTickCount();
+        if( current_timer - start_timer> HOLD_THRESHOLD)
+        {
+            return 1;  // no break to consume leftover hold LBUTTON
+        }
+        Sleep(1);
+    }
+    return 0;
+}
+int isInWaitThreshold(DWORD start_timer) //Wait for another left click
+{
+    const DWORD WAIT_THRESHOLD = 200;
+    DWORD current_timer;
+    while(1)
+    {
+        current_timer = GetTickCount();
+        if ((DETECT_LEFT_CLICK && TOGGLE_LEFT_CLICK_BUFFER) || (DETECT_RIGHT_CLICK && TOGGLE_RIGHT_CLICK_BUFFER)) return 1;
+        if(current_timer - start_timer > WAIT_THRESHOLD) return 0;
+    }
 }
 void leftClick()
 {
     mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
     mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 }
-void* clickEvent(void* arg)
+void rightClick()
 {
+    mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0);
+    mouse_event(MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
+}
+void* leftClickEvent(void* arg)
+{
+    int sleep_for;
     const DWORD HOLD_THRESHOLD = 100;
-    const DWORD WAIT_THRESHOLD = 200;
     DWORD start_timer;
-    DWORD current_timer;
     while(1)
     {
-        int is_valid_click = 1;
+        int is_valid_left_click = 1;
         int out_of_clicking_window_time = 0;
-        if ((GetAsyncKeyState(VK_LBUTTON) & 0x8000) && TOGGLE_CLICK_BUFFER)
+        if(DETECT_LEFT_CLICK && TOGGLE_LEFT_CLICK_BUFFER)  //detect the first left click
         {
-            start_timer = GetTickCount();
-            while(GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+            if(isHoldingLeftClick()) continue;  //track if it's a click or a hold
+            while(is_valid_left_click)
             {
-                current_timer = GetTickCount();
-                if( current_timer - start_timer>HOLD_THRESHOLD)
+                start_timer = GetTickCount();
+                if(!isInWaitThreshold(start_timer)) is_valid_left_click = 0;  //detect if user is clicking fast
+                if(isHoldingLeftClick()) is_valid_left_click = 0;      //go back to loop one if user is clicking not fast enough / holding left click
+                if(is_valid_left_click)
                 {
-                    is_valid_click = 0;  // no break to consume leftover hold LBUTTON
+                    for(int i = 0; i < LEFT_CLICK_BUFFER_RATE ; i++)
+                    {
+                        sleep_for = 400 * randomNumberGenerator() / pow(2,LEFT_CLICK_BUFFER_RATE);
+                        leftClick();
+                        Sleep(sleep_for);
+                    }
                 }
-                Sleep(1);
-            }   
-        }
-        while(is_valid_click)
+            }
+        }    
+        Sleep(1); // reduce CPS usage
+    }
+    return NULL;
+}
+void* rightClickEvent(void* arg)
+{
+    int sleep_for;
+    DWORD start_timer;
+    while(1)
+    {
+        int is_valid_right_click = 1;
+        int out_of_clicking_window_time = 0;
+        if(DETECT_RIGHT_CLICK && TOGGLE_RIGHT_CLICK_BUFFER)  //detect the first left click
         {
-            start_timer = GetTickCount();
-            while(1)
+            if(isHoldingRightClick()) continue;  //track if it's a click or a hold
+            while(is_valid_right_click)
             {
-                current_timer = GetTickCount();
-                if ((GetAsyncKeyState(VK_LBUTTON) & 0x8000) && TOGGLE_CLICK_BUFFER) break;
-                if(current_timer - start_timer > WAIT_THRESHOLD) is_valid_click = 0;
-            }
-            start_timer = GetTickCount();
-            while(GetAsyncKeyState(VK_LBUTTON) & 0x8000 && is_valid_click)
-            {
-                current_timer = GetTickCount();
-                if( current_timer - start_timer>HOLD_THRESHOLD)
+                start_timer = GetTickCount();
+                if(!isInWaitThreshold(start_timer)) is_valid_right_click = 0;  //detect if user is clicking fast
+                if(isHoldingRightClick()) is_valid_right_click = 0;      //go back to loop one if user is clicking not fast enough / holding left click
+                if(is_valid_right_click)
                 {
-                    is_valid_click = 0;  // no break to consume leftover
-                }
-                Sleep(1);
-            }
-            if(is_valid_click)
-            {
-                switch (CLICK_BUFFER_RATE)
-                {
-                case 1:
-                    sleep_for = 200 * randomNumberGenerator();
-                    leftClick();
-                    Sleep(sleep_for);
-                    break;
-                case 2:
-                    sleep_for = 100 * randomNumberGenerator();
-                    leftClick();
-                    Sleep(sleep_for);
-                    leftClick();
-                    break;
-                case 3:
-                    sleep_for = 50 * randomNumberGenerator();
-                    leftClick();
-                    Sleep(sleep_for);
-                    leftClick();
-                    Sleep(sleep_for);
-                    leftClick();
-                    break;
-                case 4: 
-                    sleep_for = 25 * randomNumberGenerator();
-                    leftClick();
-                    Sleep(sleep_for);
-                    leftClick();
-                    Sleep(sleep_for);
-                    leftClick();
-                    Sleep(sleep_for);
-                    leftClick();
-                    break;
-                case 5: 
-                    sleep_for = 10 * randomNumberGenerator();
-                    leftClick();
-                    Sleep(sleep_for);
-                    leftClick();
-                    Sleep(sleep_for);
-                    leftClick();
-                    Sleep(sleep_for);
-                    leftClick();
-                    Sleep(sleep_for);
-                    leftClick();
-                    break;
+                    for(int i = 0; i<RIGHT_CLICK_BUFFER_RATE;i++)
+                    {
+                        sleep_for = 400 * randomNumberGenerator() / pow(2,RIGHT_CLICK_BUFFER_RATE);
+                        rightClick();
+                        Sleep(sleep_for);
+                    }
                 }
             }
         }
+        Sleep(1); // reduce CPS usage
     }
     return NULL;
 }
 int main() 
 {
-    pthread_t background_button_press_check;
-    pthread_create(&background_button_press_check, NULL, clickEvent, NULL);
-    pthread_detach(background_button_press_check);
+    srand(time(NULL));
+
+    pthread_t background_left_click_event;
+    pthread_t background_right_click_event;
+
+    pthread_create(&background_left_click_event, NULL, leftClickEvent, NULL);
+    pthread_create(&background_right_click_event, NULL, rightClickEvent, NULL);
+
+    pthread_detach(background_left_click_event);             //run both thread at the same time
+    pthread_detach(background_right_click_event);            //if run 1 thread only, the code has to wait for left click buffer to finish to move on to right click buffer
+    
     menuHandler();
     return 0;
 }

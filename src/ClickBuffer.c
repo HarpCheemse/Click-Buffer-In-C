@@ -294,7 +294,7 @@ int isInWaitThreshold(DWORD start_timer) //Wait for another left click
     while(1)
     {
         current_timer = GetTickCount();
-        if ((DETECT_LEFT_CLICK && TOGGLE_LEFT_CLICK_BUFFER) || (DETECT_RIGHT_CLICK && TOGGLE_RIGHT_CLICK_BUFFER)) return 1;
+        if ((DETECT_LEFT_CLICK && TOGGLE_LEFT_CLICK_BUFFER)) return 1;
         if(current_timer - start_timer > WAIT_THRESHOLD) return 0;
     }
 }

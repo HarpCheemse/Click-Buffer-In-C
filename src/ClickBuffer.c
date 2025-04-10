@@ -35,7 +35,8 @@ void printUserPrompt();
 void clearBuffer()
 {
     int ch;
-    while(ch = getchar() != '\n') {}
+    while(ch = getchar() != '\n')
+    {}
 }
 bool intInputHandler(const char* input)
 {
@@ -93,7 +94,7 @@ void change_RIGHT_CLICK_BUFFER_RATE()
         {
             refreshMenu();
             printf(PRINT_RED"Please Enter Integer Number Between 1 And 5"PRINT_COLOR_RESET);
-            printf(PRINT_LIGHT_AQUA"\nChange "PRINT_COLOR_RESET PRINT_GREEN"LEFT"PRINT_COLOR_RESET PRINT_LIGHT_AQUA" Click Buffer Rate: "PRINT_COLOR_RESET);
+            printf(PRINT_LIGHT_AQUA"\nChange "PRINT_COLOR_RESET PRINT_GREEN"RIGHT"PRINT_COLOR_RESET PRINT_LIGHT_AQUA" Click Buffer Rate: "PRINT_COLOR_RESET);
         }
         else
         {
@@ -287,7 +288,7 @@ int isHoldingRightClick()
     }
     return 0;
 }
-int isInWaitThreshold(DWORD start_timer) //Wait for another left click
+int isLeftClickInWaitThreshold(DWORD start_timer) //Wait for another left click
 {
     const DWORD WAIT_THRESHOLD = 200;
     DWORD current_timer;
@@ -295,6 +296,17 @@ int isInWaitThreshold(DWORD start_timer) //Wait for another left click
     {
         current_timer = GetTickCount();
         if ((DETECT_LEFT_CLICK && TOGGLE_LEFT_CLICK_BUFFER)) return 1;
+        if(current_timer - start_timer > WAIT_THRESHOLD) return 0;
+    }
+}
+int isRightClickInWaitThreshold(DWORD start_timer) //Wait for another left click
+{
+    const DWORD WAIT_THRESHOLD = 200;
+    DWORD current_timer;
+    while(1)
+    {
+        current_timer = GetTickCount();
+        if ((DETECT_RIGHT_CLICK && TOGGLE_LEFT_CLICK_BUFFER)) return 1;
         if(current_timer - start_timer > WAIT_THRESHOLD) return 0;
     }
 }
@@ -311,19 +323,17 @@ void rightClick()
 void* leftClickEvent(void* arg)
 {
     int sleep_for;
-    const DWORD HOLD_THRESHOLD = 100;
     DWORD start_timer;
     while(1)
     {
         int is_valid_left_click = 1;
-        int out_of_clicking_window_time = 0;
         if(DETECT_LEFT_CLICK && TOGGLE_LEFT_CLICK_BUFFER)  //detect the first left click
         {
             if(isHoldingLeftClick()) continue;  //track if it's a click or a hold
             while(is_valid_left_click)
             {
                 start_timer = GetTickCount();
-                if(!isInWaitThreshold(start_timer)) is_valid_left_click = 0;  //detect if user is clicking fast
+                if(!isLeftClickInWaitThreshold(start_timer)) is_valid_left_click = 0;  //detect if user is clicking fast
                 if(isHoldingLeftClick()) is_valid_left_click = 0;      //go back to loop one if user is clicking not fast enough / holding left click
                 if(is_valid_left_click)
                 {
@@ -347,18 +357,17 @@ void* rightClickEvent(void* arg)
     while(1)
     {
         int is_valid_right_click = 1;
-        int out_of_clicking_window_time = 0;
         if(DETECT_RIGHT_CLICK && TOGGLE_RIGHT_CLICK_BUFFER)  //detect the first left click
         {
             if(isHoldingRightClick()) continue;  //track if it's a click or a hold
             while(is_valid_right_click)
             {
                 start_timer = GetTickCount();
-                if(!isInWaitThreshold(start_timer)) is_valid_right_click = 0;  //detect if user is clicking fast
+                if(!isRightClickInWaitThreshold(start_timer)) is_valid_right_click = 0;  //detect if user is clicking fast
                 if(isHoldingRightClick()) is_valid_right_click = 0;      //go back to loop one if user is clicking not fast enough / holding left click
                 if(is_valid_right_click)
                 {
-                    for(int i = 0; i<RIGHT_CLICK_BUFFER_RATE;i++)
+                    for(int i = 0; i < RIGHT_CLICK_BUFFER_RATE ; i++)
                     {
                         sleep_for = 400 * randomNumberGenerator() / pow(2,RIGHT_CLICK_BUFFER_RATE);
                         rightClick();
@@ -366,7 +375,7 @@ void* rightClickEvent(void* arg)
                     }
                 }
             }
-        }
+        }    
         Sleep(1); // reduce CPS usage
     }
     return NULL;

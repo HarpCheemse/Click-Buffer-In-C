@@ -12,13 +12,22 @@
 #define PRINT_GOLD "\033[1;33m"
 #define PRINT_LIGHT_AQUA "\033[1;33m""\x1b[36m"
 #define PRINT_COLOR_RESET "\x1b[0m" 
+#define PRINT_CYAN   "\033[0;36m"
+#define PRINT_MAGENTA "\033[0;35m"
+
+#define RATE_COLOR_1 "\033[0;92m" // Bright Green
+#define RATE_COLOR_2 "\033[0;32m" // Green
+#define RATE_COLOR_3 "\033[0;33m" // Yellow
+#define RATE_COLOR_4 "\033[0;91m" // Light red
+#define RATE_COLOR_5 "\033[0;31m" // Dark Red
+
 #define INPUT_ERROR -1
 #define MAX_SIZE 255
 
 #define DETECT_LEFT_CLICK  (GetAsyncKeyState(VK_LBUTTON) & 0x8000) 
 #define DETECT_RIGHT_CLICK (GetAsyncKeyState(VK_RBUTTON) & 0x8000) 
 
-char VERSION[20] = "1.1";
+char VERSION[20] = "1.1.1";
 int TOGGLE_LEFT_CLICK_BUFFER = 1;
 int TOGGLE_RIGHT_CLICK_BUFFER = 1;
 
@@ -51,7 +60,7 @@ bool intInputHandler(const char* input)
     }
     return true;
 }
-int intInput()  //my original input validation just reuse it :>
+int intInput()  //my original input validation, just reuse it :>
 {
 	char buffer[MAX_SIZE];
     while(1)
@@ -104,6 +113,16 @@ void change_RIGHT_CLICK_BUFFER_RATE()
     }
 }
 /*                     MENU FUNCTION                 */
+const char* rateColor(int rate)
+{
+    const char* rate_color =
+    (rate == 1) ? RATE_COLOR_1 :
+    (rate == 2) ? RATE_COLOR_2 :
+    (rate == 3) ? RATE_COLOR_3 :
+    (rate == 4) ? RATE_COLOR_4 :
+    RATE_COLOR_5;
+    return rate_color;
+}
 void printAboutProgram()
 {
     refreshMenu();
@@ -112,72 +131,98 @@ void printAboutProgram()
     printf("\nVersion: %s",VERSION);
     printf("\n- [Any libraries or resources used]");
     printf("\nContact: [harpcheemse@gmail.com]" PRINT_COLOR_RESET);
+    printf(PRINT_AQUA"\n===========================================================================\n\n\n"PRINT_COLOR_RESET);
+    printf(PRINT_AQUA"\n\n================================= " PRINT_COLOR_RESET PRINT_LIGHT_AQUA "HOW TO USE " PRINT_COLOR_RESET PRINT_AQUA"===============================\n" PRINT_COLOR_RESET);
+    printf(PRINT_GOLD"\nUse Number 1 ->6 To Choose Yout Option And Hit Enter. \nThere Are 5 Levels (1 - 5) To Choose, Each Will Greatly Affect Your CPS");
+    printf(PRINT_COLOR_RESET PRINT_AQUA"\n===========================================================================\n"PRINT_COLOR_RESET);
+    printf(PRINT_AQUA"\n\n================================= " PRINT_COLOR_RESET PRINT_LIGHT_AQUA " LICENSE" PRINT_COLOR_RESET PRINT_AQUA"=================================\n" PRINT_COLOR_RESET);
+    printf(PRINT_GOLD"MIT License\n\n");
+
+    printf("Copyright (c) 2025 HarpCheemse\n\n");
+    
+    printf("Permission is hereby granted, free of charge, to any person obtaining a copy\n");
+    printf("of this software and associated documentation files (the \"Software\"), to deal\n");
+    printf("in the Software without restriction, including without limitation the rights\n");
+    printf("to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n");
+    printf("copies of the Software, and to permit persons to whom the Software is\n");
+    printf("furnished to do so, subject to the following conditions:\n\n");
+    
+    printf("The above copyright notice and this permission notice shall be included in all\n");
+    printf("copies or substantial portions of the Software.\n\n");
+    
+    printf("THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n");
+    printf("IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n");
+    printf("FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n");
+    printf("AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n");
+    printf("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n");
+    printf("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n");
+    printf("SOFTWARE.\n");
+    
     printf(PRINT_AQUA"\n===========================================================================\n"PRINT_COLOR_RESET);
 }
-
 void printMenu()
 {
-    char line[255] = "============================================================";
+    char line[255] = "========================================================================";
     printf(PRINT_AQUA"%s\n"PRINT_COLOR_RESET, line);
-    printf(PRINT_LIGHT_AQUA"                      Click Buffer        \n" PRINT_COLOR_RESET PRINT_GOLD);
-    printf("1. Toggle "PRINT_COLOR_RESET PRINT_GREEN" LEFT" PRINT_COLOR_RESET PRINT_GOLD" Click Buffer. Currently %s%s%s\n",
+    printf(PRINT_LIGHT_AQUA"                          ----Click Buffer----        \n\n" PRINT_COLOR_RESET PRINT_GOLD);
+    printf("1. Toggle " PRINT_COLOR_RESET PRINT_CYAN "LEFT" PRINT_COLOR_RESET PRINT_GOLD " Click Buffer: %s%-7s%s"
+        PRINT_GOLD "    2. Toggle " PRINT_COLOR_RESET PRINT_MAGENTA "RIGHT" PRINT_COLOR_RESET PRINT_GOLD " Click Buffer: %s%-7s%s\n\n",
         (TOGGLE_LEFT_CLICK_BUFFER == 1) ? PRINT_GREEN : PRINT_RED,
         (TOGGLE_LEFT_CLICK_BUFFER == 1) ? "ON" : "OFF",
-        PRINT_COLOR_RESET
-    );
-    printf(PRINT_GOLD"2. Toggle "PRINT_COLOR_RESET PRINT_GREEN"RIGHT" PRINT_COLOR_RESET PRINT_GOLD" Click Buffer. Currently %s%s%s\n\n",
+        PRINT_COLOR_RESET,
         (TOGGLE_RIGHT_CLICK_BUFFER == 1) ? PRINT_GREEN : PRINT_RED,
         (TOGGLE_RIGHT_CLICK_BUFFER == 1) ? "ON" : "OFF",
-        PRINT_COLOR_RESET
-    );
-    printf(PRINT_GOLD"3. Change "PRINT_COLOR_RESET PRINT_GREEN"LEFT " PRINT_COLOR_RESET PRINT_GOLD" Click Buffer Rate: Currently: "PRINT_GREEN"Level %d \n"PRINT_COLOR_RESET, LEFT_CLICK_BUFFER_RATE);
-    printf(PRINT_GOLD"4. Change "PRINT_COLOR_RESET PRINT_GREEN"RIGHT" PRINT_COLOR_RESET PRINT_GOLD" Click Buffer Rate: Currently: "PRINT_GREEN"Level %d \n\n"PRINT_COLOR_RESET,RIGHT_CLICK_BUFFER_RATE);
-    printf(PRINT_GOLD"5. About The Program \n");
-    printf("6. Exit The Program\n\n"PRINT_COLOR_RESET);
-    if(TOGGLE_LEFT_CLICK_BUFFER)
+        PRINT_COLOR_RESET);
+    printf(PRINT_GOLD "3. Customize " PRINT_COLOR_RESET PRINT_CYAN "LEFT " 
+            PRINT_COLOR_RESET PRINT_GOLD "Click Buffer          " PRINT_COLOR_RESET);
+     
+     printf(PRINT_GOLD "4. Customize " PRINT_COLOR_RESET PRINT_MAGENTA "RIGHT" 
+            PRINT_COLOR_RESET PRINT_GOLD " Click Buffer\n" PRINT_COLOR_RESET);
+     
+     printf(PRINT_GOLD "     ----- LEVEL " PRINT_COLOR_RESET "%s%d" PRINT_COLOR_RESET 
+            PRINT_GOLD " -----        ", rateColor(LEFT_CLICK_BUFFER_RATE), LEFT_CLICK_BUFFER_RATE);
+     
+     printf(PRINT_GOLD "               ----- LEVEL " PRINT_COLOR_RESET "%s%d" PRINT_COLOR_RESET 
+            PRINT_GOLD " -----\n\n", rateColor(RIGHT_CLICK_BUFFER_RATE), RIGHT_CLICK_BUFFER_RATE);
+     
+    if (TOGGLE_LEFT_CLICK_BUFFER) 
     {
-        switch(LEFT_CLICK_BUFFER_RATE)
+        int result_cps = 0;
+        switch (LEFT_CLICK_BUFFER_RATE) 
         {
-            case 1: 
-                printf(PRINT_GOLD"Your LEFT  click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"14 CPS\n"PRINT_COLOR_RESET);
-                break;
-            case 2:
-                printf(PRINT_GOLD"Your LEFT  click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"18 CPS\n"PRINT_COLOR_RESET);
-                break;
-            case 3:
-                printf(PRINT_GOLD"Your LEFT  click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"24 CPS\n"PRINT_COLOR_RESET);
-                break; 
-            case 4:
-                printf(PRINT_GOLD"Your LEFT  click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"30 CPS\n"PRINT_COLOR_RESET);
-                break; 
-            case 5:
-                printf(PRINT_GOLD"Your LEFT  click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"40 CPS\n"PRINT_COLOR_RESET);
-                break; 
+            case 1: result_cps = 14; break;
+            case 2: result_cps = 18; break;
+            case 3: result_cps = 24; break;
+            case 4: result_cps = 30; break;
+            case 5: result_cps = 40; break;
         }
-    }
-    else printf(PRINT_RED"LEFT Click Buffer Is Currently Off\n"PRINT_COLOR_RESET);
-    if(TOGGLE_RIGHT_CLICK_BUFFER)
+        printf(PRINT_GOLD "Average " PRINT_COLOR_RESET RATE_COLOR_1 "7 Cps"
+            PRINT_COLOR_RESET PRINT_GOLD " Is Now ~ " PRINT_COLOR_RESET "%s%d CPS        "
+            PRINT_COLOR_RESET, rateColor(LEFT_CLICK_BUFFER_RATE), result_cps);
+    } 
+    else  printf(PRINT_COLOR_RESET PRINT_RED "   LEFT Click Buffer Is Off         " PRINT_COLOR_RESET);
+
+    if (TOGGLE_RIGHT_CLICK_BUFFER) 
     {
-        switch(RIGHT_CLICK_BUFFER_RATE)
+        if(!TOGGLE_LEFT_CLICK_BUFFER) printf(" ");
+        int result_cps = 0;
+        switch (RIGHT_CLICK_BUFFER_RATE) 
         {
-            case 1: 
-                printf(PRINT_GOLD"Your RIGHT click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"14 CPS\n"PRINT_COLOR_RESET);
-                break;
-            case 2:
-                printf(PRINT_GOLD"Your RIGHT click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"18 CPS\n"PRINT_COLOR_RESET);
-                break;
-            case 3:
-                printf(PRINT_GOLD"Your RIGHT click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"24 CPS\n"PRINT_COLOR_RESET);
-                break; 
-            case 4:
-                printf(PRINT_GOLD"Your RIGHT click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"30 CPS\n"PRINT_COLOR_RESET);
-                break; 
-            case 5:
-                printf(PRINT_GOLD"Your RIGHT click Average Of "PRINT_COLOR_RESET PRINT_GREEN"7 Cps" PRINT_COLOR_RESET PRINT_GOLD" Is Now ~ "PRINT_COLOR_RESET PRINT_GREEN"40 CPS\n"PRINT_COLOR_RESET);
-                break; 
+            case 1: result_cps = 14; break;
+            case 2: result_cps = 18; break;
+            case 3: result_cps = 24; break;
+            case 4: result_cps = 30; break;
+            case 5: result_cps = 40; break;
         }
-    }
-    else printf(PRINT_RED"RIGHT Click Buffer Is Currently Off\n"PRINT_COLOR_RESET);
+        printf(PRINT_GOLD "   Average " PRINT_COLOR_RESET RATE_COLOR_1 "7 Cps"
+            PRINT_COLOR_RESET PRINT_GOLD " Is Now ~ " PRINT_COLOR_RESET "%s%d CPS\n"
+            PRINT_COLOR_RESET, rateColor(RIGHT_CLICK_BUFFER_RATE), result_cps);
+    } 
+    else if(TOGGLE_LEFT_CLICK_BUFFER && !TOGGLE_RIGHT_CLICK_BUFFER) printf(PRINT_COLOR_RESET PRINT_RED "        RIGHT Click Buffer Is Off\n" PRINT_COLOR_RESET);
+    else if(!TOGGLE_LEFT_CLICK_BUFFER && !TOGGLE_RIGHT_CLICK_BUFFER) printf(PRINT_COLOR_RESET PRINT_RED "         RIGHT Click Buffer Is Off\n" PRINT_COLOR_RESET);
+
+    printf(PRINT_GOLD "\n5. About The Program                   ");
+    printf(" 6. Exit The Program\n\n"PRINT_COLOR_RESET);
     printf(PRINT_AQUA"%s\n"PRINT_COLOR_RESET, line);
 }
 void refreshMenu()

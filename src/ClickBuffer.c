@@ -27,18 +27,21 @@
 #define DETECT_LEFT_CLICK  (GetAsyncKeyState(VK_LBUTTON) & 0x8000) 
 #define DETECT_RIGHT_CLICK (GetAsyncKeyState(VK_RBUTTON) & 0x8000) 
 
-char VERSION[20] = "1.1.1";
+char VERSION[20] = "1.1.2";
 int TOGGLE_LEFT_CLICK_BUFFER = 1;
 int TOGGLE_RIGHT_CLICK_BUFFER = 1;
 
 int LEFT_CLICK_BUFFER_RATE = 1;
 int RIGHT_CLICK_BUFFER_RATE = 1;
 
+/*                     Photopyes                    */
 void getKeybind();
 void printMenu();
 void changeCPS();
 void refreshMenu();
 void printUserPrompt();
+void leftClick();
+void rightClick();
 
 /*                     Input Validation              */
 void clearBuffer()
@@ -297,11 +300,11 @@ float randomNumberGenerator() // generate number between 0.9 - 1.1
     int min = 90;
     int max = 110;
     int random_number = min + rand() % (max - min + 1);
-    return random_number/100;
+    return random_number/100.0;
 }
 int isHoldingLeftClick()
 {
-    const DWORD HOLD_THRESHOLD = 100;
+    const DWORD HOLD_THRESHOLD = 200;
     DWORD start_timer;
     DWORD current_timer;
     start_timer = GetTickCount();
@@ -318,7 +321,7 @@ int isHoldingLeftClick()
 }
 int isHoldingRightClick()
 {
-    const DWORD HOLD_THRESHOLD = 100;
+    const DWORD HOLD_THRESHOLD = 200;
     DWORD start_timer;
     DWORD current_timer;
     start_timer = GetTickCount();
@@ -355,6 +358,100 @@ int isRightClickInWaitThreshold(DWORD start_timer) //Wait for another left click
         if(current_timer - start_timer > WAIT_THRESHOLD) return 0;
     }
 }
+void performLeftClick(int LEFT_CLICK_BUFFER_RATE)
+{
+    switch(LEFT_CLICK_BUFFER_RATE)
+    {
+        case 1:
+            leftClick();
+            Sleep((int)(100.0 * randomNumberGenerator()));
+            break;
+        case 2:
+            leftClick();
+            Sleep((int)(40.0 * randomNumberGenerator()));
+            leftClick();
+            
+
+            break;
+        case 3:
+            leftClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            leftClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            leftClick();
+            Sleep((int)(20.0 * randomNumberGenerator()));
+            break;
+        case 4:
+            leftClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            leftClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            leftClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            leftClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            break;
+        case 5:
+            leftClick();
+            leftClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            leftClick();
+            leftClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            leftClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            leftClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            break;
+    }
+}
+void performRightClick(int RIGHT_CLICK_BUFFER_RATE)
+{
+    switch(RIGHT_CLICK_BUFFER_RATE)
+    {
+        case 1:
+            rightClick();
+            Sleep((int)(100.0 * randomNumberGenerator()));
+            break;
+        case 2:
+            rightClick();
+            Sleep((int)(40.0 * randomNumberGenerator()));
+            rightClick();
+            
+
+            break;
+        case 3:
+            rightClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            rightClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            rightClick();
+            Sleep((int)(20.0 * randomNumberGenerator()));
+            break;
+        case 4:
+            rightClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            rightClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            rightClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            rightClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            break;
+        case 5:
+            rightClick();
+            rightClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            rightClick();
+            rightClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            rightClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            rightClick();
+            Sleep((int)(10.0 * randomNumberGenerator()));
+            break;
+    }
+}
 void leftClick()
 {
     mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
@@ -367,7 +464,6 @@ void rightClick()
 }
 void* leftClickEvent(void* arg)
 {
-    int sleep_for;
     DWORD start_timer;
     while(1)
     {
@@ -379,15 +475,14 @@ void* leftClickEvent(void* arg)
             {
                 start_timer = GetTickCount();
                 if(!isLeftClickInWaitThreshold(start_timer)) is_valid_left_click = 0;  //detect if user is clicking fast
-                if(isHoldingLeftClick()) is_valid_left_click = 0;      //go back to loop one if user is clicking not fast enough / holding left click
+                if(isHoldingLeftClick())
+                {
+                    is_valid_left_click = 0; 
+                    printf("STOPING ");
+                }     //go back to loop one if user is clicking not fast enough / holding left click
                 if(is_valid_left_click)
                 {
-                    for(int i = 0; i < LEFT_CLICK_BUFFER_RATE ; i++)
-                    {
-                        sleep_for = 400 * randomNumberGenerator() / pow(2,LEFT_CLICK_BUFFER_RATE);
-                        leftClick();
-                        Sleep(sleep_for);
-                    }
+                    performLeftClick(LEFT_CLICK_BUFFER_RATE);
                 }
             }
         }    
@@ -397,7 +492,6 @@ void* leftClickEvent(void* arg)
 }
 void* rightClickEvent(void* arg)
 {
-    int sleep_for;
     DWORD start_timer;
     while(1)
     {
@@ -412,12 +506,7 @@ void* rightClickEvent(void* arg)
                 if(isHoldingRightClick()) is_valid_right_click = 0;      //go back to loop one if user is clicking not fast enough / holding left click
                 if(is_valid_right_click)
                 {
-                    for(int i = 0; i < RIGHT_CLICK_BUFFER_RATE ; i++)
-                    {
-                        sleep_for = 400 * randomNumberGenerator() / pow(2,RIGHT_CLICK_BUFFER_RATE);
-                        rightClick();
-                        Sleep(sleep_for);
-                    }
+                    performRightClick(RIGHT_CLICK_BUFFER_RATE);
                 }
             }
         }    
